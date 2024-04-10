@@ -1,5 +1,9 @@
 import {GenerateInvoiceUseCaseInputDto} from "./generate-invoice.usecase.dto";
 import GenerateInvoiceUseCase from "./generate-invoice.usecase";
+import Invoice from "../../domain/invoice.entity";
+import InvoiceItem from "../../domain/invoice-item.entity";
+import Id from "../../../@shared/domain/value-object/id.value-object";
+import Address from "../../../@shared/domain/value-object/address";
 
 describe('GenerateInvoiceUsecase', () => {
   const item1 = {
@@ -25,8 +29,24 @@ describe('GenerateInvoiceUsecase', () => {
     items: [item1, item2]
   }
 
+  const output = new Invoice({
+    name: input.name,
+    address: new Address(
+      input.street,
+      input.number,
+      input.complement,
+      input.city,
+      input.state,
+      input.zipCode
+    ),
+    document: input.document,
+    items: [item1, item2].map(item => new InvoiceItem({ id: new Id(item.id), name: item.name, price: item.price })),
+    updatedAt: new Date(),
+    createdAt: new Date()
+  })
+
   const MockInvoiceRepository = () => ({
-    generate: jest.fn().mockResolvedValue(Promise.resolve({...input, id: '1', total: item1.price + item2.price})),
+    generate: jest.fn().mockResolvedValue(Promise.resolve(output)),
     find: jest.fn()
   })
 
